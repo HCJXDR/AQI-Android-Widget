@@ -4,20 +4,28 @@ import android.app.Activity;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.EditText;
 
 /**
  * The configuration screen for the {@link AirQualityIndex AirQualityIndex} AppWidget.
+ * @author Tag <tagadvance@gmail.com>
  */
 public class AirQualityIndexConfigureActivity extends Activity {
 
-    int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
-    EditText mAppWidgetText;
-    private static final String PREFS_NAME = "AirQualityIndex";
-    private static final String PREF_PREFIX_KEY = "appwidget_";
+    private static final String TAG = AirQualityIndexConfigureActivity.class.getName();
+
+    static final String PREFS_NAME = "AirQualityIndex";
+    static final String KEY_USE_GPS = "gps";
+    static final String KEY_POSTAL_CODE = "postal_code";
+
+
+    int widgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
+
+    CheckBox useGps;
+    EditText postalCode;
 
     public AirQualityIndexConfigureActivity() {
         super();
@@ -32,69 +40,53 @@ public class AirQualityIndexConfigureActivity extends Activity {
         setResult(RESULT_CANCELED);
 
         setContentView(R.layout.air_quality_index_configure);
-        mAppWidgetText = (EditText) findViewById(R.id.appwidget_text);
+        useGps = (CheckBox) findViewById(R.id.use_gps);
+        postalCode = (EditText) findViewById(R.id.postal_Code);
         findViewById(R.id.add_button).setOnClickListener(mOnClickListener);
 
         // Find the widget id from the intent.
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
         if (extras != null) {
-            mAppWidgetId = extras.getInt(
+            widgetId = extras.getInt(
                     AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
         }
 
         // If this activity was started with an intent without an app widget ID, finish with an error.
-        if (mAppWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
+        if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
             finish();
             return;
         }
 
-        mAppWidgetText.setText(loadTitlePref(AirQualityIndexConfigureActivity.this, mAppWidgetId));
+        WidgetPreferences preferences = WidgetPreferences.create(this, PREFS_NAME, widgetId);
+        boolean isChecked = preferences.getBoolean(KEY_USE_GPS, true);
+        useGps.setChecked(isChecked);
+        String text = preferences.getString(KEY_POSTAL_CODE, "");
+        postalCode.setText(text);
     }
 
     View.OnClickListener mOnClickListener = new View.OnClickListener() {
         public void onClick(View v) {
             final Context context = AirQualityIndexConfigureActivity.this;
+            final WidgetPreferences preferences = WidgetPreferences.create(context, PREFS_NAME, widgetId);
 
             // When the button is clicked, store the string locally
-            String widgetText = mAppWidgetText.getText().toString();
-            saveTitlePref(context, mAppWidgetId, widgetText);
+            boolean isChecked = useGps.isSelected();
+            preferences.setBoolean(KEY_USE_GPS, isChecked);
+            String text = postalCode.getText().toString();
+            preferences.setString(KEY_POSTAL_CODE, text);
 
             // It is the responsibility of the configuration activity to update the app widget
             AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
-            AirQualityIndex.updateAppWidget(context, appWidgetManager, mAppWidgetId);
+            AirQualityIndex.updateAppWidget(context, appWidgetManager, widgetId);
 
             // Make sure we pass back the original appWidgetId
             Intent resultValue = new Intent();
-            resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
+            resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
             setResult(RESULT_OK, resultValue);
             finish();
         }
     };
 
-    // Write the prefix to the SharedPreferences object for this widget
-    static void saveTitlePref(Context context, int appWidgetId, String text) {
-        SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
-        prefs.putString(PREF_PREFIX_KEY + appWidgetId, text);
-        prefs.commit();
-    }
-
-    // Read the prefix from the SharedPreferences object for this widget.
-    // If there is no preference saved, get the default from a resource
-    static String loadTitlePref(Context context, int appWidgetId) {
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
-        String titleValue = prefs.getString(PREF_PREFIX_KEY + appWidgetId, null);
-        if (titleValue != null) {
-            return titleValue;
-        } else {
-            return context.getString(R.string.appwidget_text);
-        }
-    }
-
-    static void deleteTitlePref(Context context, int appWidgetId) {
-        SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
-        prefs.remove(PREF_PREFIX_KEY + appWidgetId);
-        prefs.commit();
-    }
 }
 
