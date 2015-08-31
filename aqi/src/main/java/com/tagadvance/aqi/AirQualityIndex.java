@@ -1,4 +1,4 @@
-package aqi.tagadvance.com.aqi_android_widget;
+package com.tagadvance.aqi;
 
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;

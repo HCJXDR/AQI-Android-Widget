@@ -1,4 +1,4 @@
-package aqi.tagadvance.com.aqi_android_widget;
+package com.tagadvance.aqi;
 
 import android.app.Activity;
 import android.appwidget.AppWidgetManager;
@@ -16,7 +16,7 @@ public class AirQualityIndexConfigureActivity extends Activity {
 
     int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
     EditText mAppWidgetText;
-    private static final String PREFS_NAME = "aqi.tagadvance.com.aqi_android_widget.AirQualityIndex";
+    private static final String PREFS_NAME = "AirQualityIndex";
     private static final String PREF_PREFIX_KEY = "appwidget_";
 
     public AirQualityIndexConfigureActivity() {
