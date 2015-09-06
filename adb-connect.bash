@@ -13,3 +13,6 @@ PORT=5555
 
 adb kill-server
 adb connect $IP:$PORT
+
+echo "Be sure to enable 'Stay awake' in 'Developer options'. This will prevent the screen from falling asleep."
+echo "'Developer options' may be enabled by selecting 'About tablet' in 'Settings' and repeatedly pressing the 'Build number' item."
